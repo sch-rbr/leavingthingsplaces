@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Smart Stack: Debug Mode</title>
+    <title>Smart Stack: Final</title>
     <style>
         body {
             background-color: #e0e0e0;
@@ -11,7 +11,7 @@
             overflow: hidden;
             width: 100vw;
             height: 100vh;
-            cursor: none; /* We hide the real mouse */
+            cursor: none; /* Hide real mouse */
         }
 
         /* The Custom Cursor */
@@ -20,12 +20,6 @@
             width: 70px;
             height: 70px;
             
-            /* FALLBACK: If image fails, you see an orange circle */
-            background-color: rgba(255, 165, 0, 0.5);
-            border: 2px solid orange;
-            border-radius: 50%;
-            
-            /* The Image */
             background-image: url('hand.png');
             background-size: contain;
             background-position: center;
@@ -58,63 +52,22 @@
             transform-origin: center center;
             transition: none;
             
-            /* Default look if image loads */
             filter: drop-shadow(0px 8px 16px rgba(0,0,0,0.15)); 
-        }
-
-        /* Style for when an image is missing */
-        .cluster-obj.missing {
-            background-color: #ff5555;
-            border: 2px solid #333;
-            box-shadow: 4px 4px 0px rgba(0,0,0,0.2);
-            display: flex; /* Ensure it takes up space */
-        }
-
-        #debug-console {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            font-family: monospace;
-            font-size: 12px;
-            color: #555;
-            background: rgba(255,255,255,0.8);
-            padding: 5px;
-            pointer-events: none;
-            z-index: 10000;
         }
     </style>
 </head>
 <body>
 
     <div id="custom-cursor"></div>
-    <div id="debug-console">Initializing...</div>
 
     <script>
-        // --- DEBUGGER ---
-        const debugEl = document.getElementById('debug-console');
-        function log(msg) {
-            debugEl.innerText = msg;
-        }
-
         // --- MOUSE SYSTEM ---
         const cursorEl = document.getElementById('custom-cursor');
         
-        // Check if hand.png loaded
-        const handImg = new Image();
-        handImg.src = 'hand.png';
-        handImg.onload = () => {
-            cursorEl.style.backgroundColor = 'transparent'; // Remove orange fallback
-            cursorEl.style.border = 'none';
-            log("System Ready: hand.png loaded.");
-        };
-        handImg.onerror = () => {
-            log("WARNING: hand.png failed to load. Using orange circle.");
-        };
-
         let mouseTarget = { x: window.innerWidth/2, y: window.innerHeight/2 };
         let mouseCurrent = { x: window.innerWidth/2, y: window.innerHeight/2 };
         
-        // Drag Factor (0.04 = Heavy)
+        // Heavy/Slow Drag Factor
         const DRAG_FACTOR = 0.04; 
 
         window.addEventListener('mousemove', function(e) {
@@ -174,6 +127,7 @@
 
             let zIndex = 1000;
 
+            // --- ANIMATION LOOP ---
             function animate() {
                 // Update Cursor
                 let dx = mouseTarget.x - mouseCurrent.x;
@@ -202,6 +156,7 @@
             }
             animate();
 
+            // --- DIRECTOR ---
             function director() {
                 let currentCount = document.querySelectorAll('.cluster-container').length;
                 if (currentCount < 3) {
@@ -263,13 +218,12 @@
                     box.style.width = dna.size + 'px';
                     box.style.height = dna.size + 'px';
                     
-                    // --- ROBUST IMAGE LOADING ---
                     box.src = filename;
+                    
+                    // --- SILENT FAILURE ---
+                    // If the image is missing, we just hide it. No pink box.
                     box.onerror = function() {
-                        // If image fails, make it a red block so we can see it exists
-                        this.classList.add('missing');
-                        this.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='; // clear broken icon
-                        log("Missing File: " + filename);
+                        this.style.display = 'none'; 
                     };
 
                     box.dataset.grav = dna.physics.grav;
